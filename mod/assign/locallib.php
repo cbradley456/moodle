@@ -2264,7 +2264,7 @@ class assign {
                 $grade = '-';
             }
 
-            $courseindexsummary->add_assign_info($cm->id, $cm->name, $sectionname, $timedue, $submitted, $grade);
+            $courseindexsummary->add_assign_info($cm->id, $cm->get_formatted_name(), $sectionname, $timedue, $submitted, $grade);
 
         }
 
@@ -2930,9 +2930,9 @@ class assign {
         if ($attemptnumber < 0 || $create) {
             // Make sure this grade matches the latest submission attempt.
             if ($this->get_instance()->teamsubmission) {
-                $submission = $this->get_group_submission($userid, 0, true);
+                $submission = $this->get_group_submission($userid, 0, true, $attemptnumber);
             } else {
-                $submission = $this->get_user_submission($userid, true);
+                $submission = $this->get_user_submission($userid, true, $attemptnumber);
             }
             if ($submission) {
                 $attemptnumber = $submission->attemptnumber;
@@ -7463,6 +7463,10 @@ class assign {
 
         // Check if default gradebook feedback is visible and enabled.
         $gradebookfeedbackplugin = $this->get_feedback_plugin_by_type($gradebookplugin);
+
+        if (empty($gradebookfeedbackplugin)) {
+            return false;
+        }
 
         if ($gradebookfeedbackplugin->is_visible() && $gradebookfeedbackplugin->is_enabled()) {
             return true;
