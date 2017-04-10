@@ -40,14 +40,18 @@ if (isset($_SESSION["notice"])) {
 }
 
 $plagiarismpluginturnitin = new plagiarism_plugin_turnitin();
-$supported_mods = array('assign', 'forum', 'workshop');
+$supportedmods = array('assign', 'forum', 'workshop');
+
+if ($DB->record_exists('modules', array('name' => 'coursework', 'visible' => 1))) {
+    $supportedmods[] = 'coursework';
+}
 
 // Get plugin config.
 $pluginconfig = array();
 $pluginconfig['turnitin_use'] = get_config('plagiarism', 'turnitin_use');
 
 // Check that mod enabled setting has been initialised.
-foreach ($supported_mods as $mod) {
+foreach ($supportedmods as $mod) {
     $pluginconfig['turnitin_use_mod_'.$mod] = $plagiarismpluginturnitin->get_config_settings('mod_'.$mod);
 }
 
@@ -57,12 +61,12 @@ $plugindefaults = $plagiarismpluginturnitin->get_settings();
 if (!empty($action)) {
     switch ($action) {
         case "config":
-            // Overall plugin use setting
+            // Overall plugin use setting.
             $turnitinoveralluse = optional_param('turnitin_use', 0, PARAM_INT);
             set_config('turnitin_use', $turnitinoveralluse, 'plagiarism');
 
             // Allow Turnitin to be on for Individual modules.
-            foreach ($supported_mods as $mod) {
+            foreach ($supportedmods as $mod) {
                 $turnitinuse = optional_param('turnitin_use_mod_'.$mod, 0, PARAM_INT);
                 $turnitinuse = ($turnitinoveralluse == 0) ? 0 : $turnitinuse;
 
@@ -85,10 +89,10 @@ if (!empty($action)) {
             array_push($settingsfields, 'plagiarism_locked_message');
 
             foreach ($settingsfields as $field) {
-                $defaultfield = new object();
+                $defaultfield = new stdClass();
                 $defaultfield->cm = null;
                 $defaultfield->name = $field;
-                if ($field == 'plagiarism_locked_message'){
+                if ($field == 'plagiarism_locked_message') {
                     $defaultfield->value = optional_param($field, '', PARAM_TEXT);
                 } else {
                     $defaultfield->value = optional_param($field, '', PARAM_ALPHANUMEXT);
@@ -101,6 +105,7 @@ if (!empty($action)) {
                         turnitintooltwo_print_error('defaultupdateerror', 'plagiarism_turnitin', null, null, __FILE__, __LINE__);
                     }
                 } else {
+                    $defaultfield->config_hash = $defaultfield->cm."_".$defaultfield->name;
                     if (!$DB->insert_record('plagiarism_turnitin_config', $defaultfield)) {
                         turnitintooltwo_print_error('defaultinserterror', 'plagiarism_turnitin', null, null, __FILE__, __LINE__);
                     }
@@ -172,7 +177,7 @@ switch ($do) {
 
             $output .= "== ".$table." ==\r\n\r\n";
 
-            if ($data = $DB->get_recordset($table)) {
+            if ($data = $DB->get_records($table)) {
 
                 $headers = array_keys(get_object_vars(current($data)));
                 $columnwidth = 25;

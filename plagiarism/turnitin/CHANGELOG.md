@@ -1,17 +1,102 @@
+### Date:		2017-February-22
+### Release:	v2017022201
+
+- Verified against Moodle 3.2.
+- UI modified for compatibility with Boost theme.
+- Update grade call removed for ULCC's coursework module. (Thanks to @aferenz)
+- Fixes:
+	- An undefined index was causing a Moodle unit test to error. (Thanks to @danmarsden)
+	- Cron submission processing fails gracefully and doesn't stop further cron processing if submissiontype or submitter are not set.
+	- Cron submission processing fails gracefully and doesn't stop further cron processing if the file or forum post no longer exist. (Thanks to @danmarsden)
+	- Display customised error message if errormsg is '0'. (Thanks to @roperto)
+	- Save error message correctly instead of error code. (Thanks to @roperto)
+	- Undeclared variable replaced in logging call.
+
+---
+
+### Date:		2017-January-31
+### Release:	v2017013101
+
+- Fixes:
+	- DB Upgrade script now checks submitter column exists as this was breaking for some users.
+
+---
+
+### Date:		2017-January-25
+### Release:	v2017012501
+
+- The events now use Moodle's new Events 2 API, which is a requirement to support future Moodle versions. Admins should ensure the Events Queue has been cleared for Plagiarism events. Following this change to the Events API this release and future releases will no longer work on Moodle 2.6.
+- The language strings have been updated across all supported languages.
+- The unused database columns legacyteacher, apimd5 and externalstatus have been removed from the plugin's plagiarism_turnitin_files table. These were leftovers from Dan Marsden's version of the plugin that are no longer used.
+- Travis-CI has been aded to the plugin as an extra QA resource to help flag any issues with the code.
+- Fixes:
+	- The assignment edit API call no longer fails if repository settings don't match the plugin settings.
+	- JavaScript error no longer appears when closing the PeerMark manager.
+	- The & character no longer appears in TFS as &amp;.
+	- Default values for submitter and student_read columns are now consistent between upgrade and install. (Thanks to @danmarsden).
+	- The error message when submitting a file >40mb now displays correctly.
+	- Fixed an issue with anonymous marking where grades would appear in the gradebook before the assignment has been unanonymised.
+	- Fixed an issue where the first submission to an assignment would sometimes fail to send to Turnitin.
+	- Moodle's Behat unit tests will no longer fail. (Thanks to @roperto)
+
+---
+
+### Date:		2016-September-14
+### Release:	v2016091401
+
+- Support added for ULCC's coursework module (Thanks to @aferenz).
+- Blank update_status function added for consistency.
+- Fixes:
+	- Locked default settings are now observed.
+	- Default settings are now used when enabling Turnitin on an assignment which didn't previously have it enabled.
+	- Use each module's specific grade item update instead of calling grade_update directly.
+
+---
+
+### Date: 		2016-July-26
+### Release:	v2016072601
+
+- Verified against Moodle 3.1.
+- Removed word count check before submission.
+- Added .xls and .xlsx to accepted filetypes.
+- Increase submission processing limit in cron to 100.
+- Fixes:
+ 	- Module can still be used if Turnitin account is not configured.
+	- Check $CFG exists before using in version.php (Thanks to @micaherne).
+	- Ensure file extension is lowercase when checking accepted files.
+	- Ensure refresh submissions link works for workshop and forums.
+	- Change recordset to records in data dump as recordset wasn't working for PostgreSQL.
+	- Assignment default settings are now applied when creating assignment (Thanks to @danmarsden).
+		- Admins - please ensure that plugin settings match account settings.
+	- Added missing and changed incorrect error language strings.
+	- All uses of object() changed to stdClass().
+	- PeerMark Reviews launcher now enrols user correctly in Turnitin class.
+	- Catch exception if can not get file content when making a submission (Thanks to @kenneth-hendricks).
+	- Ignore inherited roles when looking for instructors on Turnitin class creation.
+	- Ensure activity edit page does not break if plugin is not fully configured. (Thanks to @mhughes2k).
+	- Fixed an issue where submission notifications would be sent to instructors even with instructor digital receipt notifications turned off.
+	- Fixed a bug that led to error and stack trace upon data dump generation.
+	- Grades are no longer sent to the gradebook before anonymity is lifted when blind marking is enabled.
+	- Fixed an issue where the EULA link would be broken post-submission if the student originally declined the EULA. (Thanks to @pauln)
+	- Added missing error language strings to the language string file.
+	- Fixed an issue where a submission could be stuck in pending if the user is not found.
+
+---
+
 ### Date:       2016-April-11
 ### Release:    v2016011105
 
+- Added support form to contact Tii support directly from the plugin.
 - Removed cut-off date from due-date calculation.
 - Added a message to activity logs detailing whether or not a EULA was accepted.
 - Cron functionality has been moved to scheduled tasks.
 - Created warning on config page for the customer to check whether translated matching and ETS are configured at account level
 - Fixes:
 	- Added check for empty array to fix bug #115
-	- Plugin now checks file-size before checking word-count. This closes #85.
+	- Plugin now checks file-size before checking word-count.
 	- Fixed issue where EULA sometimes appeared multiple times on-screen.
 	- fixed issue in JS that prevented Rubric Manager and Quickmark loading. This fixes #101
 	- Increased foreign key support and fixed cron index error (#92). (Thanks to AviMoto)
-
 
 ---
 
@@ -379,8 +464,8 @@ Releases prior to version 2015040106 will refer to changes made to the Turnitin'
 
 ---
 
-###Date:       2014-September-04
-###Release:    v2014012407
+### Date:       2014-September-04
+### Release:    v2014012407
 
 - Remove Grademark settings if GradeMark is disabled. (Thanks to Alex Rowe)
 - Date handling reconfigured in PP to prevent erros (Thanks to Dan Marsden)
@@ -394,8 +479,8 @@ Releases prior to version 2015040106 will refer to changes made to the Turnitin'
 
 ---
 
-###Date:       2014-August-19
-###Release:    v2014012406
+### Date:       2014-August-19
+### Release:    v2014012406
 
 - Error reporting added for files that are too large, small submissions and any other submission errors.
 - Error reporting added to cron.
@@ -415,8 +500,8 @@ Releases prior to version 2015040106 will refer to changes made to the Turnitin'
 
 ---
 
-###Date:       2014-June-11
-###Release:    v2014012405
+### Date:       2014-June-11
+### Release:    v2014012405
 
 - Course reset functionality added to remove Turnitin data when a class/module is reset.
 - Ability added to enable/disable Turnitin in individual modules.
@@ -463,15 +548,15 @@ Releases prior to version 2015040106 will refer to changes made to the Turnitin'
 
 ---
 
-###Date:       2014-June-11
-###Release:    v2014012404
+### Date:       2014-June-11
+### Release:    v2014012404
 
 - EULA acceptance is now stored locally for submissions.
 
 ---
 
-###Date:       2014-April-17
-###Release:    v2014012403
+### Date:       2014-April-17
+### Release:    v2014012403
 
 - Grademark link removed for student if a grade has not been set in Plagiarism Plugin.
 - Feedback release date changed on forum with plagiarism plugin to be the same as start date.
@@ -488,8 +573,8 @@ Releases prior to version 2015040106 will refer to changes made to the Turnitin'
 
 ---
 
-###Date:       2014-February-26
-###Release:    v2014012402
+### Date:       2014-February-26
+### Release:    v2014012402
 
 - Vietnamese Language pack added.
 - Option to send draft submissions to Turnitin in Plagiarism Plugin reinstated.
@@ -512,8 +597,8 @@ Releases prior to version 2015040106 will refer to changes made to the Turnitin'
 
 ---
 
-###Date:       2014-January-24
-###Release:    v2014012401
+### Date:       2014-January-24
+### Release:    v2014012401
 
 - File type limit removed.
 - Ability to accept no file added so that marks / grades can be allocated to non file submissions.
@@ -523,8 +608,8 @@ Releases prior to version 2015040106 will refer to changes made to the Turnitin'
 
 ---
 
-###Date: 		2013-December-18
-###Release:	v2013121801
+### Date: 		2013-December-18
+### Release:	v2013121801
 
 - Supports Turnitin Originality Checking, GradeMark and PeerMark
 - Allows access to the Rubric Manager and Quickmark Manager from within the Moodle environment

@@ -24,7 +24,7 @@ require_login();
 $action = required_param('action', PARAM_ALPHAEXT);
 $cmid = optional_param('cmid', 0, PARAM_INT);
 $itemid = optional_param('itemid', 0, PARAM_INT);
-if( !empty( $cmid ) ){
+if ( !empty( $cmid ) ) {
     $cm = get_coursemodule_from_id('', $cmid);
     $context = context_course::instance($cm->course);
 
@@ -66,7 +66,7 @@ switch ($action) {
         if ($syncassignment['success']) {
             $turnitintooltwoview = new turnitintooltwo_view();
             $return = html_writer::tag("div",
-                                        $turnitintooltwoview->output_dv_launch_form($dvtype, $submissionid, $user->tii_user_id,
+                                        $turnitintooltwoview->output_dv_launch_form($dvtype, $submissionid, $user->tiiuserid,
                                                                     $userrole, ''), array('style' => 'display: none'));
         }
         break;
@@ -80,7 +80,7 @@ switch ($action) {
 
         $submissionid = optional_param('submission', 0, PARAM_INT);
 
-        if ($userrole == 'Instructor' && $cm->modname == "assign") {
+        if ($userrole == 'Instructor') {
             $return["status"] = $pluginturnitin->update_grades_from_tii($cm);
 
             $moduleconfigvalue = new stdClass();
@@ -95,6 +95,7 @@ switch ($action) {
                 $moduleconfigvalue->cm = $cm->id;
                 $moduleconfigvalue->name = 'grades_last_synced';
                 $moduleconfigvalue->value = time();
+                $moduleconfigvalue->config_hash = $moduleconfigvalue->cm."_".$moduleconfigvalue->name;
                 $DB->insert_record('plagiarism_turnitin_config', $moduleconfigvalue);
             }
 
@@ -115,8 +116,8 @@ switch ($action) {
     case "peermarkmanager":
 
         if ($userrole == 'Instructor') {
-            $plagiarism_plugin_turnitin = new plagiarism_plugin_turnitin();
-            $coursedata = $plagiarism_plugin_turnitin->get_course_data($cm->id, $cm->course);
+            $plagiarismpluginturnitin = new plagiarism_plugin_turnitin();
+            $coursedata = $plagiarismpluginturnitin->get_course_data($cm->id, $cm->course);
 
             $tiiassignment = $DB->get_record('plagiarism_turnitin_config', array('cm' => $cm->id, 'name' => 'turnitin_assignid'));
 
@@ -141,8 +142,10 @@ switch ($action) {
         break;
 
     case "rubricview":
-        $isstudent = ($cm->modname == "forum") ? has_capability('mod/'.$cm->modname.':replypost', $context) :
-                                                has_capability('mod/'.$cm->modname.':submit', $context);
+        $replypost = 'mod/'.$cm->modname.':replypost';
+        $submit = 'mod/'.$cm->modname.':submit';
+        $isstudent = ($cm->modname == "forum") ? has_capability($replypost, $context) : has_capability($submit, $context);
+
         if ($isstudent) {
             $tiiassignment = $DB->get_record('plagiarism_turnitin_config', array('cm' => $cm->id, 'name' => 'turnitin_assignid'));
 
@@ -160,17 +163,19 @@ switch ($action) {
         break;
 
     case "peermarkreviews":
-
-        $isstudent = ($cm->modname == "forum") ? has_capability('mod/'.$cm->modname.':replypost', $context) :
-                                                has_capability('mod/'.$cm->modname.':submit', $context);
+        $replypost = 'mod/'.$cm->modname.':replypost';
+        $submit = 'mod/'.$cm->modname.':submit';
+        $isstudent = ($cm->modname == "forum") ? has_capability($replypost, $context) : has_capability($submit, $context);
 
         if ($userrole == 'Instructor' || $isstudent) {
-            $role = ($istutor) ? 'Instructor' : 'Learner';
-
             $tiiassignment = $DB->get_record('plagiarism_turnitin_config', array('cm' => $cm->id, 'name' => 'turnitin_assignid'));
 
+            $user = new turnitintooltwo_user($USER->id, $userrole);
+            $coursedata = turnitintooltwo_assignment::get_course_data($cm->course, 'PP');
+            $user->join_user_to_class($coursedata->turnitin_cid);
+
             echo html_writer::tag("div", turnitintooltwo_view::output_lti_form_launch('peermark_reviews',
-                                                        $role, $tiiassignment->value),
+                                                        $userrole, $tiiassignment->value),
                                                         array("class" => "launch_form", "style" => "display:none;"));
             echo html_writer::script("<!--
                                     window.document.forms[0].submit();
@@ -185,23 +190,23 @@ switch ($action) {
 
         $message = optional_param('message', '', PARAM_ALPHAEXT);
 
-        // Get the id from the turnitintooltwo_users table so we can update
-        $turnitin_user = $DB->get_record('turnitintooltwo_users', array('userid' => $USER->id));
+        // Get the id from the turnitintooltwo_users table so we can update.
+        $turnitinuser = $DB->get_record('turnitintooltwo_users', array('userid' => $USER->id));
 
-        // Build user object for update
-        $eula_user = new object();
-        $eula_user->id = $turnitin_user->id;
-        $eula_user->user_agreement_accepted = 0;
+        // Build user object for update.
+        $eulauser = new stdClass();
+        $eulauser->id = $turnitinuser->id;
+        $eulauser->user_agreement_accepted = 0;
         if ($message == 'turnitin_eula_accepted') {
-            $eula_user->user_agreement_accepted = 1;
-            turnitintooltwo_activitylog("User ".$USER->id." (".$turnitin_user->turnitin_uid.") accepted the EULA.", "PP_EULA_ACCEPTANCE");
+            $eulauser->user_agreement_accepted = 1;
+            turnitintooltwo_activitylog("User ".$USER->id." (".$turnitinuser->turnitin_uid.") accepted the EULA.", "PP_EULA_ACCEPTANCE");
         } else if ($message == 'turnitin_eula_declined') {
-            $eula_user->user_agreement_accepted = -1;
-            turnitintooltwo_activitylog("User ".$USER->id." (".$turnitin_user->turnitin_uid.") declined the EULA.", "PP_EULA_ACCEPTANCE");
+            $eulauser->user_agreement_accepted = -1;
+            turnitintooltwo_activitylog("User ".$USER->id." (".$turnitinuser->turnitin_uid.") declined the EULA.", "PP_EULA_ACCEPTANCE");
         }
 
-        // Update the user using the above object
-        $DB->update_record('turnitintooltwo_users', $eula_user, $bulk=false);
+        // Update the user using the above object.
+        $DB->update_record('turnitintooltwo_users', $eulauser, $bulk = false);
         break;
 
     case "resubmit_event":
