@@ -24,10 +24,32 @@
  *
  */
 
+defined('MOODLE_INTERNAL') || die;
+
 // Alert Section.
 $temp = new admin_settingpage('theme_adaptable_frontpage_alert', get_string('frontpagealertsettings', 'theme_adaptable'));
 $temp->add(new admin_setting_heading('theme_adaptable_alert', get_string('alertsettingsheading', 'theme_adaptable'),
 format_text(get_string('alertdesc', 'theme_adaptable'), FORMAT_MARKDOWN)));
+
+// Alert Course Settings Heading.
+$name = 'theme_adaptable/settingsalertcourse';
+$heading = get_string('alertsettingscourse', 'theme_adaptable');
+$setting = new admin_setting_heading($name, $heading, '');
+$temp->add($setting);
+
+// Alert hidden course.
+$name = 'theme_adaptable/alerthiddencourse';
+$title = get_string('alerthiddencourse', 'theme_adaptable');
+$description = get_string('alerthiddencoursedesc', 'theme_adaptable');
+$default = 'warning';
+$choices = array(
+'disabled' => get_string('alertdisabled', 'theme_adaptable'),
+'info' => get_string('alertinfo', 'theme_adaptable'),
+'warning' => get_string('alertwarning', 'theme_adaptable'),
+'success' => get_string('alertannounce', 'theme_adaptable'));
+$setting = new admin_setting_configselect($name, $title, $description, $default, $choices);
+$setting->set_updatedcallback('theme_reset_all_caches');
+$temp->add($setting);
 
 // Alert General Settings Heading.
 $name = 'theme_adaptable/settingsalertgeneral';

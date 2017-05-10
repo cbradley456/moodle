@@ -19,10 +19,12 @@
  *
  * @package   theme_adaptable
  * @copyright 2015 Jeremy Hopkins (Coventry University)
- * @copyright 2015 Fernando Acedo (3-bits.com)
+ * @copyright 2015-2017 Fernando Acedo (3-bits.com)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
  */
+
+defined('MOODLE_INTERNAL') || die();
 
 theme_adaptable_initialise_zoom($PAGE);
 $setzoom = theme_adaptable_get_zoom();
@@ -34,6 +36,10 @@ $left = (!right_to_left());  // To know if to add 'pull-right' and 'desktop-firs
 
 $hasmiddle = $PAGE->blocks->region_has_content('middle', $OUTPUT);
 $hasfootnote = (!empty($PAGE->theme->settings->footnote));
+
+$hideheadermobile = $PAGE->theme->settings->hideheadermobile;
+$hidealertsmobile = $PAGE->theme->settings->hidealertsmobile;
+$hidesocialmobile = $PAGE->theme->settings->hidesocialmobile;
 
 // Fixed header.
 // $fixedheader = $PAGE->theme->settings->stickynavbar;.
@@ -154,16 +160,18 @@ if (!empty($fonttitlename)  && $fonttitlename != 'default') {
 <?php echo $OUTPUT->standard_top_of_body_html() ?>
 
 <?php
-// Display dev alert.
-echo $OUTPUT->get_dev_alert();
+    // Development or wrong moodle version alert.
+    echo $OUTPUT->get_dev_alert();
 ?>
 
 <div id="page" class="container-fluid <?php echo "$setfull $showiconsclass"; ?>">
 
 <?php
-// Display alerts.
-echo $OUTPUT->get_alert_messages();
-?>
+// If the device is a mobile and the alerts are not hidden or it is a desktop then load and show the alerts.
+if (((is_mobile()) && ($hidealertsmobile == 1)) || (is_desktop())) {
+    // Display alerts.
+    echo $OUTPUT->get_alert_messages();
+} ?>
 
 <?php
 // Fixed header.
@@ -187,19 +195,19 @@ if ($fixedheader) {
 <?php
 if (!isloggedin() || isguestuser()) {
     echo $OUTPUT->page_heading_menu();
+
     if ($PAGE->theme->settings->displaylogin == 'box') {
         // Login button.
 ?>
         <form action="<?php p($wwwroot) ?>/login/index.php" method="post">
-            <input style="height: 12px; padding-bottom: 4px;" type="text" name="username" 
+            <input type="text" name="username"
                     placeholder="<?php echo get_string('loginplaceholder', 'theme_adaptable'); ?>" size="10">
-            <input style="height: 12px; padding-bottom: 4px;" type="password" name="password" 
+            <input type="password" name="password"
                     placeholder="<?php echo get_string('passwordplaceholder', 'theme_adaptable'); ?>"  size="10">
             <button class="btn-login" type="submit"><?php echo get_string('logintextbutton', 'theme_adaptable'); ?></button>
         </form>
 <?php
     } else if ($PAGE->theme->settings->displaylogin == 'button') {
-
 ?>
         <form action="<?php p($wwwroot) ?>/login/index.php" method="post">
             <button class="btn-login" type="submit">
@@ -211,174 +219,26 @@ if (!isloggedin() || isguestuser()) {
 } else {
 ?>
         <div class="dropdown secondone">
-            <a class="dropdown-toggle usermendrop" data-toggle="dropdown" href="#">
+            <a class="dropdown-toggle usermendrop" data-toggle="dropdown" data-target="#">
+
 <?php
+    // Show user avatar.
     $userpic = $OUTPUT->user_picture($USER, array('link' => false, 'size' => 80, 'class' => 'userpicture'));
     echo $userpic;
+
+    // Show username.
     echo $USER->firstname;
 ?>
                 <span class="fa fa-angle-down"></span>
             </a>
 
-    <ul class="dropdown-menu usermen" role="menu" aria-labelledby="dLabel">
-<?php
-if (!empty($PAGE->theme->settings->enablemy)) { ?>
-        <li>
-            <a href="<?php p($CFG->wwwroot) ?>/my"
-                title="<?php echo get_string('myhome') ?>">
-                <i class="fa fa-dashboard"></i>
-                <?php echo get_string('myhome') ?>
-            </a>
-        </li>
-<?php
-}
-?>
-<?php
-if (!empty($PAGE->theme->settings->enableprofile)) { ?>
-        <li>
-            <a href="<?php p($CFG->wwwroot) ?>/user/profile.php"
-                title="<?php echo get_string('viewprofile') ?>">
-                <i class="fa fa-user"></i>
-                <?php echo get_string('viewprofile') ?>
-            </a>
-        </li>
-<?php
-}
-?>
-<?php
-if (!empty($PAGE->theme->settings->enableeditprofile)) { ?>
-        <li>
-            <a href="<?php p($CFG->wwwroot) ?>/user/edit.php"
-                title="<?php echo get_string('editmyprofile') ?>">
-                <i class="fa fa-cog"></i>
-                <?php echo get_string('editmyprofile') ?>
-            </a>
-        </li>
-<?php
-}
-?>
-<?php
-if (!empty($PAGE->theme->settings->enableprivatefiles)) { ?>
-        <li>
-        <a href="<?php p($CFG->wwwroot) ?>/user/files.php"
-            title="<?php echo get_string('privatefiles', 'block_private_files') ?>">
-                <i class="fa fa-file"></i>
-                <?php echo get_string('privatefiles', 'block_private_files') ?>
-        </a>
-        </li>
-<?php
-}
-?>
-<?php
-if (!empty($PAGE->theme->settings->enablegrades)) { ?>
-        <li>
-        <a href="<?php p($CFG->wwwroot) ?>/grade/report/overview/index.php"
-            title="<?php echo get_string('grades') ?>">
-                <i class="fa fa-list-alt"></i><?php echo get_string('grades') ?>
-        </a>
-        </li>
-<?php
-}
-?>
-<?php
-if (!empty($PAGE->theme->settings->enablebadges)) { ?>
-        <li>
-        <a href="<?php p($CFG->wwwroot) ?>/badges/mybadges.php" title="<?php echo get_string('badges') ?>">
-                <i class="fa fa-certificate"></i><?php echo get_string('badges') ?>
-        </a>
-        </li>
-<?php
-}
-?>
+    <ul class="dropdown-menu usermen" role="menu">
 
-<?php
-if ($CFG->version > 2015051100 && !empty($PAGE->theme->settings->enablepref)) { ?>
-        <li>
-        <a href="<?php p($CFG->wwwroot) ?>/user/preferences.php"
-            title="<?php echo get_string('preferences') ?>">
-            <i class="fa fa-cog"></i><?php echo get_string('preferences') ?>
-        </a>
-        </li>
-<?php
-}
-?>
+<?php echo $OUTPUT->user_profile_menu() ?>
 
-<?php
-if (!empty($PAGE->theme->settings->enablenote)) { ?>
-        <li>
-        <a href="<?php p($CFG->wwwroot) ?>/message/edit.php"
-            title="<?php echo get_string('notifications') ?>">
-                <i class="fa fa-paper-plane"></i>
-                <?php echo get_string('notifications') ?>
-        </a>
-        </li>
-<?php
-}
-?>
-
-<?php
-if (!empty($PAGE->theme->settings->enableblog)) { ?>
-        <li>
-        <a href="<?php p($CFG->wwwroot) ?>/blog/index.php"
-            title="<?php echo get_string('enableblog', 'theme_adaptable') ?>">
-                <i class="fa fa-rss"></i>
-                <?php echo get_string('enableblog', 'theme_adaptable') ?>
-        </a>
-        </li>
-<?php
-}
-?>
-
-<?php
-if (!empty($PAGE->theme->settings->enableposts)) { ?>
-        <li>
-        <a href="<?php p($CFG->wwwroot) ?>/mod/forum/user.php"
-            title="<?php echo get_string('enableposts', 'theme_adaptable') ?>">
-                <i class="fa fa-commenting"></i>
-                <?php echo get_string('enableposts', 'theme_adaptable') ?>
-        </a>
-        </li>
-<?php
-}
-?>
-
-<?php
-if (!empty($PAGE->theme->settings->enablefeed)) { ?>
-        <li>
-        <a href="<?php p($CFG->wwwroot) ?>/report/myfeedback/index.php"
-            title="<?php echo get_string('enablefeed', 'theme_adaptable') ?>">
-                <i class="fa fa-bullhorn"></i>
-                <?php echo get_string('enablefeed', 'theme_adaptable') ?>
-        </a>
-        </li>
-<?php
-}
-?>
-
-<?php
-if (!empty($PAGE->theme->settings->enablecalendar)) { ?>
-        <li>
-        <a href="<?php p($CFG->wwwroot) ?>/calendar/view.php"
-            title="<?php echo get_string('pluginname', 'block_calendar_month') ?>">
-                <i class="fa fa-calendar"></i>
-                <?php echo get_string('pluginname', 'block_calendar_month') ?>
-        </a>
-        </li>
-<?php
-}
-?>
-        <li>
-        <a href="<?php echo $wwwroot.'/login/logout.php?sesskey='.sesskey(); ?>"
-            title="<?php echo get_string('logout') ?>">
-                <i class="fa fa-sign-out"></i>
-                <?php echo get_string('logout') ?>
-        </a>
-        </li>
     </ul>
 </div>
-<?php
-}
-?>
+<?php } ?>
 </div>
 
 <div style="float: right; position: relative; display: inline; margin-left: 15px; height:20px;">
@@ -390,23 +250,39 @@ if (empty($PAGE->layout_options['langmenu']) || $PAGE->layout_options['langmenu'
 </div>
 
 <?php
+// Add top menus.
 echo $OUTPUT->get_top_menus();
+
+// Add messages / notifications (moodle 3.2 or higher).
+if ($CFG->version > 2016120400) {
+    echo $OUTPUT->navbar_plugin_output();
+}
 ?>
     </div>
 </div>
-<div id="page-header" class="clearfix container">
 
 
 <?php
-// Site title or logo.
-echo $OUTPUT->get_logo_title();
+
+// If it is a mobile and the header is not hidden or it is a desktop then load and show the header.
+if (((is_mobile()) && ($hideheadermobile == 1)) || (is_desktop())) {
+?>
+
+<div id="page-header" class="clearfix container">
+
+<?php
+    // Site title or logo.
+    echo $OUTPUT->get_logo_title();
 ?>
 
 
 <?php
 // Social icons.
 if ($PAGE->theme->settings->socialorsearch == 'social') {
-    echo $OUTPUT->socialicons();
+    // If it is a mobile and the social icons are not hidden or it is a desktop then load and show the social icons.
+    if (((is_mobile()) && ($hidesocialmobile == 1)) || (is_desktop())) {
+        echo $OUTPUT->socialicons();
+    }
 }
 ?>
 
@@ -442,7 +318,6 @@ if ($PAGE->theme->settings->socialorsearch == 'search') { ?>
 <?php
 
 // Navbar Menu.
-
 if (isloggedin() && !isguestuser()) {
 ?>
     <div id="navwrap">
@@ -515,6 +390,7 @@ if (isloggedin()) {
         </div>
     </div>
 <?php
+}
 }
 ?>
 </header>

@@ -24,10 +24,12 @@
  *
  */
 
-$settings = null;
+defined('MOODLE_INTERNAL') || die;
+
 require_once(__DIR__.'/libs/admin_confightmleditor.php');
 require_once(__DIR__.'/lib.php');
-defined('MOODLE_INTERNAL') || die;
+
+$settings = null;
 
 if (is_siteadmin()) {
     // Adaptable theme settings page.
@@ -52,6 +54,7 @@ if (is_siteadmin()) {
     include(dirname(__FILE__) . '/settings/frontpage_ticker.php');
     include(dirname(__FILE__) . '/settings/frontpage_slider.php');
     include(dirname(__FILE__) . '/settings/alert_box.php');
+    include(dirname(__FILE__) . '/settings/alert_box_settings.php');
     include(dirname(__FILE__) . '/settings/layout.php');
     include(dirname(__FILE__) . '/settings/footer.php');
     include(dirname(__FILE__) . '/settings/mobile_settings.php');

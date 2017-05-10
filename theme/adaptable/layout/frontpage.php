@@ -24,15 +24,26 @@
  *
  */
 
+defined('MOODLE_INTERNAL') || die;
+
+// Include header.
 require_once(dirname(__FILE__) . '/includes/header.php');
 
 // Set layout.
 $left = $PAGE->theme->settings->blockside;
-$hasfootnote = (!empty($PAGE->theme->settings->footnote));
-$infobox2 = $PAGE->theme->settings->infobox2;
+$hassidepost = $PAGE->blocks->region_has_content('side-post', $OUTPUT);
+$regions = theme_adaptable_grid($left, $hassidepost);
 
+$hasfootnote = (!empty($PAGE->theme->settings->footnote));
+$hideslidermobile = $PAGE->theme->settings->hideslidermobile;
+
+// Include slider.
 if (!empty($PAGE->theme->settings->sliderenabled)) {
-    echo $OUTPUT->get_frontpage_slider();
+
+    // If it is a mobile and the header is not hidden or it is a desktop then load and show the header.
+    if (((is_mobile()) && ($hideslidermobile == 1)) || (is_desktop())) {
+        echo $OUTPUT->get_frontpage_slider();
+    }
 }
 
 // Infobox 1.
@@ -69,14 +80,14 @@ if (!empty($PAGE->theme->settings->frontpageblocksenabled)) { ?>
 // Infobox 2.
 if (!empty($PAGE->theme->settings->infobox2)) {
     if (!empty($PAGE->theme->settings->infoboxfullscreen)) {
-        echo '<div id="theinfo">';
+        echo '<div id="theinfo2">';
     } else {
-        echo '<div id="theinfo" class="container">';
+        echo '<div id="theinfo2" class="container">';
     }
 ?>
         <div class="row-fluid">
 <?php
-    echo $OUTPUT->get_setting('infobox2', 'format_html');
+            echo $OUTPUT->get_setting('infobox2', 'format_html');
 ?>
         </div>
 </div>
@@ -91,39 +102,16 @@ if (!empty($PAGE->theme->settings->infobox2)) {
             <?php echo $OUTPUT->navbar(); ?>
 
     </div>
-
-<?php
-
-// Left Sidebar.
-if (($left == 1) && $PAGE->blocks->region_has_content('side-post', $OUTPUT)) {
-    echo $OUTPUT->blocks('side-post', 'span3 desktop-first-column');
-}
-
-
-// Main Region.
-if ($PAGE->blocks->region_has_content('side-post', $OUTPUT)) {
-    if ($left == 1) {
-        echo '<section id="region-main" class="span9">';
-    } else {
-        echo '<section id="region-main" class="span9" style="margin: 0;">';
-    }
-}
-
-echo $OUTPUT->course_content_header();
-echo $OUTPUT->main_content();
-echo $OUTPUT->course_content_footer();
-?>
-
-</section>
-
-<?php
-
-// Right Sidebar.
-if (($left == 0) && $PAGE->blocks->region_has_content('side-post', $OUTPUT)) {
-    echo $OUTPUT->blocks('side-post', 'span3');
-}
-?>
-
+    <section id="region-main" class="<?php echo $regions['content'];?>">
+        <?php
+        echo $OUTPUT->course_content_header();
+        echo $OUTPUT->main_content();
+        echo $OUTPUT->course_content_footer();
+        ?>
+    </section>
+    <?php
+        echo $OUTPUT->blocks('side-post', $regions['blocks']);
+    ?>
 </div>
 
 <?php
@@ -143,4 +131,5 @@ if (is_siteadmin()) {
 </div>
 
 <?php
+// Include footer.
 require_once(dirname(__FILE__) . '/includes/footer.php');

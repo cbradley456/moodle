@@ -24,6 +24,8 @@
  *
  */
 
+defined('MOODLE_INTERNAL') || die;
+
 define('THEME_ADAPTABLE_DEFAULT_ALERTCOUNT', '1');
 define('THEME_ADAPTABLE_DEFAULT_ANALYTICSCOUNT', '1');
 define('THEME_ADAPTABLE_DEFAULT_TOPMENUSCOUNT', '1');
@@ -159,6 +161,7 @@ function theme_adaptable_process_css($css, $theme) {
         '[[setting:socialsize]]' => '32px',
         '[[setting:socialsizemobile]]' => '22px',
         '[[setting:mobile]]' => '22',
+        '[[setting:hideslidermobile]]' => '1',
         '[[setting:socialpaddingtop]]' => '1.8%',
         '[[setting:fontname]]' => 'Open Sans',
         '[[setting:fontsize]]' => '95%',
@@ -171,9 +174,6 @@ function theme_adaptable_process_css($css, $theme) {
         '[[setting:fonttitleweight]]' => '400',
         '[[setting:fonttitlesize]]' => '48px',
         '[[setting:fonttitlecolor]]' => '#FFFFFF',
-        '[[setting:fonttitlenamecourse]]' => 'Audiowide',
-        '[[setting:fonttitleweightcourse]]' => '48px',
-        '[[setting:fonttitlesizecourse]]' => '48px',
         '[[setting:fonttitlecolorcourse]]' => '#FFFFFF',
         '[[setting:sitetitlepaddingtop]]' => '0px',
         '[[setting:sitetitlepaddingleft]]' => '0px',
@@ -186,15 +186,15 @@ function theme_adaptable_process_css($css, $theme) {
         '[[setting:coursetitlemaxwidth]]' => '50%',
         '[[setting:sitetitlemaxwidth]]' => '50%',
         '[[setting:coursetitlepaddingtop]]' => '0px',
-        '[[setting:hidebreadcrumbmobile]]' => '',
-        '[[setting:hidepagefootermobile]]' => '',
-        '[[setting:hidealertsmobile]]' => '',
-        '[[setting:hidesocialmobile]]' => '',
+        '[[setting:hidebreadcrumbmobile]]' => 1,
+        '[[setting:hidepagefootermobile]]' => 0,
+        '[[setting:hidealertsmobile]]' => 0,
+        '[[setting:hidesocialmobile]]' => 0,
         '[[setting:socialboxpaddingtopmobile]]' => '',
         '[[setting:socialboxpaddingbottommobile]]' => '',
-        '[[setting:hidecoursetitlemobile]]' => '',
-        '[[setting:hidelogomobile]]' => '',
-        '[[setting:hideheadermobile]]' => '',
+        '[[setting:hidecoursetitlemobile]]' => 0,
+        '[[setting:hidelogomobile]]' => 0,
+        '[[setting:hideheadermobile]]' => 0,
         '[[setting:enableheading]]' => 'fullname',
         '[[setting:breadcrumbtitle]]' => 'shortname',
         '[[setting:enableavailablecourses]]' => 'display',
@@ -211,6 +211,15 @@ function theme_adaptable_process_css($css, $theme) {
         '[[setting:fontblockheaderweight]]' => '400',
         '[[setting:fontblockheadersize]]' => '28px',
         '[[setting:fontblockheadercolor]]' => '#009688',
+        '[[setting:alertcolorinfo]]' => '#3a87ad',
+        '[[setting:alertbackgroundcolorinfo]]' => '#d9edf7',
+        '[[setting:alertbordercolorinfo]]' => '#bce8f1',
+        '[[setting:alertcolorsuccess]]' => '#468847',
+        '[[setting:alertbackgroundcolorsuccess]]' => '#dff0d8',
+        '[[setting:alertbordercolorsuccess]]' => '#d6e9c6',
+        '[[setting:alertcolorwarning]]' => '#8a6d3b',
+        '[[setting:alertbackgroundcolorwarning]]' => '#fcf8e3',
+        '[[setting:alertbordercolorwarning]]' => '#fbeed5',
     );
 
     // Get all the defined settings for the theme and replace defaults.
@@ -502,4 +511,59 @@ function theme_adaptable_remove_site_fullname($heading) {
     $header = preg_replace("/^".$SITE->fullname."/", "", $heading);
 
     return $header;
+}
+
+/**
+ * Generate theme grid.
+ * @param int $left
+ * @param bool $hassitepost
+ */
+function theme_adaptable_grid($left, $hassitepost) {
+    if ($hassitepost) {
+        if ($left) {
+            $regions = array('content' => 'span9 pull-right');
+            $regions['blocks'] = 'span3 desktop-first-column';
+        } else {
+            $regions = array('content' => 'span9 desktop-first-column');
+            $regions['blocks'] = 'span3';
+        }
+    } else {
+        $regions = array('content' => 'span12');
+        $regions['blocks'] = 'empty';
+        return $regions;
+    }
+
+    if ('rtl' === get_string('thisdirection', 'langconfig')) {
+        if ($left) {
+            $regions = array('content' => 'span9 desktop-first-column');
+            $regions['blocks'] = 'span3';
+        } else {
+            $regions = array('content' => 'span9 pull-right');
+            $regions['blocks'] = 'span3 desktop-first-column';
+        }
+    }
+    return $regions;
+}
+
+/**
+ * Detect device.
+ */
+function is_desktop() {
+    $useragent = $_SERVER['HTTP_USER_AGENT'];
+    return stripos($useragent, 'mobile') === false && stripos($useragent, 'tablet') === false && stripos($useragent, 'ipad') === false;
+}
+
+function is_tablet() {
+    $useragent = $_SERVER['HTTP_USER_AGENT'];
+    return stripos($useragent, 'tablet') !== false || stripos($useragent, 'tab') !== false;
+}
+
+function is_ipad() {
+    $useragent = $_SERVER['HTTP_USER_AGENT'];
+    return stripos($useragent, 'ipad') !== false;
+}
+
+function is_mobile() {
+    $useragent = $_SERVER['HTTP_USER_AGENT'];
+    return stripos($useragent, 'mobile') !== false || stripos($useragent, 'nokia') !== false || stripos($useragent, 'phone') !== false;
 }

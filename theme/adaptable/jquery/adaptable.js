@@ -8,14 +8,17 @@ jQuery(document).ready(function($) {
     //alertkey undismissable is a special case for "loginas" alert which shouldn't really
     //be permanently dismissed.
     //Justin 2015/12/05
+
+
    $('.close').click(function(){
       var alertindex = $(this).data('alertindex');
       var alertkey = $(this).data('alertkey');
-      if(alertkey!='undismissable'){
+      if(alertkey!='undismissable' && alertkey != 'undefined' && alertkey){
          M.util.set_user_preference('theme_adaptable_alertkey' + alertindex, alertkey);
       }
     });
 
+// Ticker ***************************************
   $('#ticker').tickerme();
     //new for every three
     if($('header').css("position") == "fixed") {
